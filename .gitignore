@@ -1,0 +1,22 @@
+# Gradle
+.gradle/
+build/
+
+# Fabric Loom cache
+.gradle/loom-cache/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+out/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local build artifacts
+*.jar

@@ -14,6 +14,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.world.GameMode;
+import net.minecraft.entity.LivingEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,16 +42,19 @@ public class LifeLinkMod implements ModInitializer {
         // Register commands
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> registerCommands(dispatcher));
 
-        // Listen for player combat deaths (handled by vanilla event)
+        // Listen for player combat deaths (PVP only)
         ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register((world, entity, killedEntity) -> {
             LOGGER.info("AFTER_KILLED_OTHER_ENTITY event fired");
-            if (isActive && entity instanceof ServerPlayerEntity player && !deadPlayers.contains(player.getName().getString())) {
-                if (!naturalDeathsEnabled) { // Only trigger for combat deaths if natural deaths are disabled
-                    LOGGER.info("Combat death detected for player: {}", player.getName().getString());
-                    firstDeathPlayer = player.getName().getString();
-                    killAllPlayers(player.getServer());
-                    allPlayersShouldBeDead = true; // Mark all future joiners as dead
-                }
+            // Only trigger if a player kills another player (PVP)
+            if (isActive
+                && entity instanceof ServerPlayerEntity killer
+                && killedEntity instanceof ServerPlayerEntity victim
+                && !deadPlayers.contains(victim.getName().getString())
+                && !naturalDeathsEnabled) {
+                LOGGER.info("Combat death detected for player: {}", victim.getName().getString());
+                firstDeathPlayer = victim.getName().getString();
+                killAllPlayers(killer.getServer());
+                allPlayersShouldBeDead = true; // Mark all future joiners as dead
             }
         });
 
